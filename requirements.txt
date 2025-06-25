@@ -1,0 +1,28 @@
+# FastAPI and server dependencies
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+aiofiles>=23.2.1
+
+# Audio processing
+soundfile>=0.12.1
+
+# Core dependencies (will be installed via Zonos)
+torch>=2.5.1
+torchaudio>=2.5.1
+transformers>=4.48.1
+huggingface-hub>=0.28.1
+
+# Text processing
+inflect>=7.5.0
+phonemizer>=3.3.0
+
+# Japanese support
+kanjize>=1.5.0
+sudachidict-full>=20241021
+sudachipy>=0.6.10
+
+# Utilities
+numpy>=2.2.2
+packaging
+setuptools
