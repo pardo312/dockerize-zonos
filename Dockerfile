@@ -1,37 +1,46 @@
-FROM pytorch/pytorch:2.6.0-cuda12.4-cudnn9-devel
-
-# Install system dependencies
-RUN apt update && \
-    apt install -y espeak-ng ffmpeg git && \
-    rm -rf /var/lib/apt/lists/*
-
-# Install uv for faster Python package management
-RUN pip install uv
+# Use NVIDIA CUDA base image with Python
+FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
 
 # Set working directory
 WORKDIR /app
 
-# Clone and install Zonos
-RUN git clone https://github.com/Zyphra/Zonos.git /tmp/zonos && \
-    cd /tmp/zonos && \
-    uv pip install --system -e . && \
-    uv pip install --system -e .[compile] && \
-    cd /app && \
-    cp -r /tmp/zonos/zonos ./zonos/ && \
-    cp /tmp/zonos/pyproject.toml ./ && \
-    rm -rf /tmp/zonos
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# Install FastAPI and additional dependencies
-RUN uv pip install --system fastapi uvicorn python-multipart aiofiles
-
-# Copy application files
-COPY . .
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-dev \
+    git \
+    espeak-ng \
+    libsndfile1 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Create directories for uploads and generated audio
-RUN mkdir -p uploads generated
+RUN mkdir -p /app/uploads /app/generated
+
+# Copy requirements file
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip3 install --no-cache-dir -U pip setuptools wheel
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# Install Zonos from GitHub
+RUN git clone https://github.com/Zyphra/Zonos.git /tmp/Zonos \
+    && cd /tmp/Zonos \
+    && pip3 install -e . \
+    && cd /app \
+    && rm -rf /tmp/Zonos/.git
+
+# Copy application code
+COPY . .
 
 # Expose port
 EXPOSE 8000
 
-# Run the FastAPI server
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Command to run the application
+CMD ["python3", "main.py"]

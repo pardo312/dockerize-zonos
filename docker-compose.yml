@@ -3,13 +3,12 @@ version: '3.8'
 services:
   zonos-api:
     build: .
+    image: jiufen/zonos-api:latest
+    container_name: zonos-api
     ports:
       - "8000:8000"
     volumes:
       - ./generated:/app/generated
-      - ./uploads:/app/uploads
-    environment:
-      - CUDA_VISIBLE_DEVICES=0
     deploy:
       resources:
         reservations:
@@ -18,9 +17,3 @@ services:
               count: 1
               capabilities: [gpu]
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
